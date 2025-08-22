@@ -1,4 +1,4 @@
-// Technology Research Agent - Core Module
+// Technology Research Agent - Core Module (Fixed for Netlify Timeouts)
 // File: js/agents/technology-research.js
 
 class TechnologyResearchAgent {
@@ -23,25 +23,25 @@ class TechnologyResearchAgent {
             // Update UI with progress
             this.updateProgress("Initializing research for " + technologyArea, 10);
 
-            // Phase 1: Market Research
+            // Phase 1: Market Research (Reduced scope)
             const marketResearch = await this.conductMarketResearch(technologyArea);
             this.updateProgress("Completing market landscape analysis", 30);
 
-            // Phase 2: Vendor Analysis  
-            const vendorAnalysis = await this.conductVendorAnalysis(technologyArea, marketResearch);
+            // Phase 2: Vendor Analysis (Reduced scope)
+            const vendorAnalysis = await this.conductVendorAnalysis(technologyArea);
             this.updateProgress("Analyzing vendor ecosystem", 50);
 
-            // Phase 3: Hype Cycle Analysis
-            const hypeCycleData = await this.generateHypeCycleAnalysis(technologyArea, marketResearch);
+            // Phase 3: Hype Cycle Analysis (Reduced scope)
+            const hypeCycleData = await this.generateHypeCycleAnalysis(technologyArea);
             this.updateProgress("Generating hype cycle positioning", 70);
 
-            // Phase 4: Strategic Whitepaper
-            const whitepaper = await this.generateStrategicWhitepaper(technologyArea, {
+            // Phase 4: Strategic Summary (Simplified)
+            const strategicSummary = await this.generateStrategicSummary(technologyArea, {
                 marketResearch,
                 vendorAnalysis,
                 hypeCycleData
             });
-            this.updateProgress("Creating strategic whitepaper", 90);
+            this.updateProgress("Creating strategic summary", 90);
 
             // Phase 5: Generate Artifacts
             const artifacts = await this.generateArtifacts({
@@ -49,7 +49,7 @@ class TechnologyResearchAgent {
                 marketResearch,
                 vendorAnalysis,
                 hypeCycleData,
-                whitepaper
+                strategicSummary
             });
 
             this.currentAnalysis.artifacts = artifacts;
@@ -68,198 +68,96 @@ class TechnologyResearchAgent {
         }
     }
 
-    // Phase 1: Conduct comprehensive market research
+    // Phase 1: Conduct market research (Reduced tokens)
     async conductMarketResearch(technologyArea) {
-        const prompt = `You are a senior enterprise technology analyst conducting comprehensive market research.
+        const prompt = `You are a senior enterprise technology analyst.
 
-Technology Area: ${technologyArea}
+Technology: ${technologyArea}
 
-Conduct thorough research and provide a structured analysis covering:
+Provide a concise analysis covering:
 
-1. **Market Overview**
-   - Current market size and growth trajectory
-   - Key driving forces and adoption factors
-   - Market maturity indicators
+1. **Market Overview** - Current market size and growth
+2. **Technology Landscape** - Core capabilities and use cases
+3. **Adoption Trends** - Enterprise adoption patterns
+4. **Key Players** - Leading vendors (top 5)
+5. **Business Impact** - ROI and strategic value
 
-2. **Technology Landscape**
-   - Core capabilities and use cases
-   - Technical architecture patterns
-   - Implementation approaches
-
-3. **Adoption Trends**
-   - Industry vertical adoption rates
-   - Enterprise vs SMB adoption patterns
-   - Geographic adoption variations
-
-4. **Key Players Analysis**
-   - Leading vendors and their market positions
-   - Emerging players and disruptors
-   - Technology platform leaders
-
-5. **Business Impact Assessment**
-   - ROI and value proposition analysis
-   - Risk factors and challenges
-   - Strategic advantages
-
-Provide your analysis in a structured format with clear sections and actionable insights. Focus on enterprise architecture implications and strategic decision-making factors.`;
+Keep response focused and enterprise-oriented. Maximum 800 words.`;
 
         return await this.callClaudeAPI(prompt, {
-            maxTokens: 4000,
+            maxTokens: 1200,
             temperature: 0.3
         });
     }
 
-    // Phase 2: Analyze vendor ecosystem
-    async conductVendorAnalysis(technologyArea, marketContext) {
-        const prompt = `You are an enterprise architecture analyst specializing in vendor evaluation and competitive analysis.
+    // Phase 2: Analyze vendor ecosystem (Reduced tokens)
+    async conductVendorAnalysis(technologyArea) {
+        const prompt = `You are an enterprise vendor analyst.
 
-Technology Area: ${technologyArea}
+Technology: ${technologyArea}
 
-Market Context:
-${marketContext}
+Provide vendor ecosystem analysis:
 
-Provide a comprehensive vendor ecosystem analysis including:
+1. **Market Leaders** - Top 3-5 established vendors
+2. **Emerging Players** - 2-3 innovative challengers  
+3. **Competitive Positioning** - Key differentiators
+4. **Selection Criteria** - Evaluation framework
 
-1. **Market Leaders**
-   - Top 5-7 established vendors
-   - Market share and positioning
-   - Strength/weakness analysis
-
-2. **Emerging Players**
-   - Innovative startups and challengers
-   - Unique value propositions
-   - Growth trajectory assessment
-
-3. **Platform Ecosystem**
-   - Integration capabilities
-   - Partnership networks
-   - Developer ecosystem strength
-
-4. **Competitive Dynamics**
-   - Competitive positioning map
-   - Differentiation strategies
-   - Price/value positioning
-
-5. **Vendor Evaluation Framework**
-   - Key evaluation criteria
-   - Scoring methodology
-   - Selection recommendations
-
-Focus on practical enterprise purchasing decisions and strategic vendor partnerships. Consider the 4 P's framework: People, Process, Platform, Price.`;
+Focus on enterprise purchasing decisions. Maximum 600 words.`;
 
         return await this.callClaudeAPI(prompt, {
-            maxTokens: 4000,
+            maxTokens: 1000,
             temperature: 0.3
         });
     }
 
-    // Phase 3: Generate hype cycle analysis
-    async generateHypeCycleAnalysis(technologyArea, marketResearch) {
-        const prompt = `You are a senior technology analyst creating a Gartner-style hype cycle analysis.
+    // Phase 3: Generate hype cycle analysis (Reduced tokens)
+    async generateHypeCycleAnalysis(technologyArea) {
+        const prompt = `You are a technology analyst creating hype cycle analysis.
 
-Technology Area: ${technologyArea}
+Technology: ${technologyArea}
 
-Market Research Context:
-${marketResearch}
+Provide hype cycle assessment:
 
-Create a comprehensive hype cycle analysis including:
+1. **Current Position** - Where it sits on the hype cycle
+2. **Justification** - Why it's positioned there
+3. **Timeline** - Expected time to mainstream adoption
+4. **Recommendations** - When to evaluate/implement
 
-1. **Current Position Assessment**
-   - Where ${technologyArea} sits on the hype cycle
-   - Justification for this positioning
-   - Movement trend analysis
-
-2. **Hype Cycle Phases Analysis**
-   - Innovation Trigger: Initial breakthroughs and early implementations
-   - Peak of Inflated Expectations: Market hype and overestimation
-   - Trough of Disillusionment: Reality check and market correction
-   - Slope of Enlightenment: Practical applications emerge
-   - Plateau of Productivity: Mainstream adoption and proven value
-
-3. **Timeline Projections**
-   - Expected time to reach mainstream adoption
-   - Key milestones and inflection points
-   - Market maturity indicators
-
-4. **Risk and Opportunity Assessment**
-   - Implementation risks at current maturity level
-   - Strategic opportunities for early/late adopters
-   - Timing recommendations for enterprise adoption
-
-5. **Strategic Recommendations**
-   - When to evaluate vs implement
-   - Pilot project recommendations
-   - Strategic positioning advice
-
-Provide data-driven insights with clear reasoning for positioning and timing recommendations.`;
+Keep analysis concise and actionable. Maximum 500 words.`;
 
         return await this.callClaudeAPI(prompt, {
-            maxTokens: 3500,
+            maxTokens: 800,
             temperature: 0.2
         });
     }
 
-    // Phase 4: Generate strategic whitepaper
-    async generateStrategicWhitepaper(technologyArea, analysisData) {
+    // Phase 4: Generate strategic summary (Simplified)
+    async generateStrategicSummary(technologyArea, analysisData) {
         const settings = this.getSettings();
         const organizationName = settings.organizationName || "Your Organization";
 
-        const prompt = `You are an enterprise architect creating an executive-level strategic technology whitepaper.
+        const prompt = `You are an enterprise architect creating an executive summary.
 
 Technology: ${technologyArea}
 Organization: ${organizationName}
 
-Research Foundation:
-Market Research: ${analysisData.marketResearch}
-Vendor Analysis: ${analysisData.vendorAnalysis}
-Hype Cycle Analysis: ${analysisData.hypeCycleData}
-
-Create a comprehensive strategic whitepaper with the following structure:
+Based on the research, provide:
 
 **EXECUTIVE SUMMARY**
-- Key findings and strategic recommendations
-- Business impact assessment
-- Implementation timeline recommendations
+- Key findings and recommendations
+- Strategic fit assessment
+- Implementation timeline
 
-**1. TECHNOLOGY OVERVIEW**
-- Definition and core capabilities
-- Business value proposition
-- Strategic importance for enterprise architecture
+**NEXT STEPS**
+- Immediate actions
+- Evaluation criteria
+- Success metrics
 
-**2. MARKET LANDSCAPE ANALYSIS**
-- Market size, growth, and maturity assessment
-- Competitive landscape overview
-- Industry adoption trends
-
-**3. ENTERPRISE IMPLICATIONS**
-- Strategic fit with business objectives
-- Architectural considerations
-- Integration requirements and challenges
-
-**4. VENDOR ECOSYSTEM EVALUATION**
-- Leading solution providers
-- Evaluation criteria and methodology
-- Vendor selection framework
-
-**5. IMPLEMENTATION STRATEGY**
-- Phased adoption approach
-- Risk mitigation strategies
-- Success metrics and KPIs
-
-**6. FINANCIAL ANALYSIS**
-- Investment requirements and TCO analysis
-- ROI projections and payback timeline
-- Budget planning considerations
-
-**7. RECOMMENDATIONS AND NEXT STEPS**
-- Strategic recommendations
-- Immediate action items
-- Long-term roadmap alignment
-
-Format as a professional enterprise document with clear sections, executive-level language, and actionable recommendations.`;
+Keep summary executive-focused and actionable. Maximum 600 words.`;
 
         return await this.callClaudeAPI(prompt, {
-            maxTokens: 6000,
+            maxTokens: 1000,
             temperature: 0.2
         });
     }
@@ -277,9 +175,6 @@ Format as a professional enterprise document with clear sections, executive-leve
             
             // Generate Vendor Landscape Chart
             artifacts.vendorLandscape = await this.generateVendorLandscapeChart(analysisData);
-            
-            // Generate Full Whitepaper PDF
-            artifacts.whitepaper = await this.generateWhitepaperPDF(analysisData);
             
             // Generate Analysis Summary JSON
             artifacts.rawData = this.generateAnalysisJSON(analysisData);
@@ -315,8 +210,8 @@ Format as a professional enterprise document with clear sections, executive-leve
         doc.setTextColor(0, 0, 0);
         doc.text('Executive Summary', 20, 75);
         
-        // Extract key points from whitepaper
-        const summaryText = this.extractExecutiveSummary(analysisData.whitepaper);
+        // Extract key points from strategic summary
+        const summaryText = this.extractExecutiveSummary(analysisData.strategicSummary);
         const splitText = doc.splitTextToSize(summaryText, 170);
         doc.setFontSize(11);
         doc.text(splitText, 20, 90);
@@ -374,40 +269,6 @@ Format as a professional enterprise document with clear sections, executive-leve
                 });
             });
         });
-    }
-
-    // Generate Full Whitepaper PDF
-    async generateWhitepaperPDF(analysisData) {
-        const { jsPDF } = window.jspdf;
-        const doc = new jsPDF();
-
-        // Title page
-        doc.setFontSize(24);
-        doc.setTextColor(102, 126, 234);
-        doc.text(`${analysisData.technologyArea}`, 20, 40);
-        doc.text('Strategic Analysis', 20, 60);
-        
-        doc.setFontSize(14);
-        doc.setTextColor(0, 0, 0);
-        doc.text(`Generated: ${new Date().toLocaleDateString()}`, 20, 80);
-
-        // Content pages (simplified for demo)
-        doc.addPage();
-        doc.setFontSize(16);
-        doc.text('Strategic Whitepaper', 20, 30);
-        
-        const content = analysisData.whitepaper.substring(0, 2000) + '...';
-        const splitContent = doc.splitTextToSize(content, 170);
-        doc.setFontSize(10);
-        doc.text(splitContent, 20, 50);
-
-        const pdfBlob = doc.output('blob');
-        return {
-            type: 'pdf',
-            name: `${analysisData.technologyArea}_Strategic_Whitepaper.pdf`,
-            blob: pdfBlob,
-            url: URL.createObjectURL(pdfBlob)
-        };
     }
 
     // Draw hype cycle curve
@@ -492,7 +353,7 @@ Format as a professional enterprise document with clear sections, executive-leve
         ctx.fillText('Innovation →', -50, 0);
         ctx.restore();
         
-        // Sample vendor positions (in real implementation, extract from analysis)
+        // Sample vendor positions
         const vendors = [
             {name: 'Leader A', x: 600, y: 200},
             {name: 'Leader B', x: 550, y: 250},
@@ -512,9 +373,8 @@ Format as a professional enterprise document with clear sections, executive-leve
         });
     }
 
-    // Call Claude API via Netlify function
+    // Call Claude API via Netlify function (Reduced defaults)
     async callClaudeAPI(prompt, options = {}) {
-        // Get the current site URL dynamically
         const baseUrl = window.location.origin;
         const functionUrl = `${baseUrl}/.netlify/functions/claude-api`;
         
@@ -522,7 +382,7 @@ Format as a professional enterprise document with clear sections, executive-leve
             prompt: prompt,
             options: {
                 model: "claude-sonnet-4-20250514",
-                maxTokens: options.maxTokens || 4000,
+                maxTokens: options.maxTokens || 1000,  // Reduced default
                 temperature: options.temperature || 0.3
             }
         };
@@ -564,9 +424,8 @@ Format as a professional enterprise document with clear sections, executive-leve
         document.dispatchEvent(event);
     }
 
-    extractExecutiveSummary(whitepaper) {
-        // Extract first paragraph or executive summary section
-        const lines = whitepaper.split('\n');
+    extractExecutiveSummary(strategicSummary) {
+        const lines = strategicSummary.split('\n');
         const summaryLines = [];
         let inSummary = false;
         
@@ -598,7 +457,7 @@ Format as a professional enterprise document with clear sections, executive-leve
                 marketResearch: analysisData.marketResearch,
                 vendorAnalysis: analysisData.vendorAnalysis,
                 hypeCycleData: analysisData.hypeCycleData,
-                whitepaper: analysisData.whitepaper
+                strategicSummary: analysisData.strategicSummary
             }
         };
 
