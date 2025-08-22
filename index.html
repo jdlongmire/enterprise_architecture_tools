@@ -340,6 +340,33 @@
             transform: scale(1.05);
         }
 
+        .settings-button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 25px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+            font-size: 1rem;
+        }
+
+        .settings-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .settings-button-secondary {
+            background: #27ae60 !important;
+        }
+
+        .settings-button-secondary:hover {
+            background: #219a52 !important;
+            box-shadow: 0 5px 15px rgba(39, 174, 96, 0.4);
+        }
+
         .footer {
             text-align: center;
             margin-top: 50px;
@@ -580,8 +607,8 @@
             <input type="text" id="organization-name" placeholder="Your Organization">
         </div>
 
-        <button class="agent-button" onclick="saveSettings()">Save Settings</button>
-        <button class="agent-button" onclick="testConnection()" style="margin-top: 10px; background: #27ae60;">Test Connection</button>
+        <button class="settings-button settings-button-primary" onclick="saveSettings()">Save Settings</button>
+        <button class="settings-button settings-button-secondary" onclick="testConnection()" style="margin-top: 10px;">Test Connection</button>
     </div>
 
     <!-- Modal for Agent Interfaces -->
@@ -656,19 +683,25 @@
         }
 
         function enableAgents() {
-            const buttons = document.querySelectorAll('.agent-button:not(#orchestrator-btn)');
+            const buttons = document.querySelectorAll('.agent-card .agent-button:not(#orchestrator-btn)');
             buttons.forEach(btn => {
                 btn.disabled = false;
-                btn.textContent = btn.textContent.replace('Configure API First', 'Launch Agent');
+                if (btn.textContent.includes('Configure API First')) {
+                    btn.textContent = btn.textContent.replace('Configure API First', 'Launch Agent');
+                }
             });
         }
 
         function disableAgents() {
-            const buttons = document.querySelectorAll('.agent-button:not(#orchestrator-btn)');
+            const buttons = document.querySelectorAll('.agent-card .agent-button:not(#orchestrator-btn)');
             buttons.forEach(btn => {
                 if (!btn.textContent.includes('Coming Soon')) {
                     btn.disabled = true;
-                    btn.textContent = 'Configure API First';
+                    if (btn.textContent.includes('Launch Agent')) {
+                        btn.textContent = btn.textContent.replace('Launch Agent', 'Configure API First');
+                    } else if (!btn.textContent.includes('Configure API First')) {
+                        btn.textContent = 'Configure API First';
+                    }
                 }
             });
         }
