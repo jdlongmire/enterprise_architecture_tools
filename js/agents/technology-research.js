@@ -4,7 +4,6 @@
 class TechnologyResearchAgent {
     constructor() {
         this.name = "Technology Research Agent";
-        this.apiEndpoint = "https://api.anthropic.com/v1/messages";
         this.currentAnalysis = null;
         this.analysisHistory = [];
     }
@@ -12,11 +11,6 @@ class TechnologyResearchAgent {
     // Main research workflow
     async conductResearch(technologyArea, options = {}) {
         try {
-            const settings = this.getSettings();
-            if (!settings.apiKey) {
-                throw new Error("Claude API key not configured");
-            }
-
             // Initialize analysis session
             this.currentAnalysis = {
                 id: this.generateAnalysisId(),
@@ -360,6 +354,62 @@ Format as a professional enterprise document with clear sections, executive-leve
         });
     }
 
+    // Generate Vendor Landscape Chart
+    async generateVendorLandscapeChart(analysisData) {
+        const canvas = document.createElement('canvas');
+        canvas.width = 800;
+        canvas.height = 600;
+        const ctx = canvas.getContext('2d');
+
+        // Create vendor landscape visualization
+        this.drawVendorLandscape(ctx, analysisData);
+
+        return new Promise((resolve) => {
+            canvas.toBlob((blob) => {
+                resolve({
+                    type: 'image',
+                    name: `${analysisData.technologyArea}_Vendor_Landscape.png`,
+                    blob: blob,
+                    url: URL.createObjectURL(blob)
+                });
+            });
+        });
+    }
+
+    // Generate Full Whitepaper PDF
+    async generateWhitepaperPDF(analysisData) {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+
+        // Title page
+        doc.setFontSize(24);
+        doc.setTextColor(102, 126, 234);
+        doc.text(`${analysisData.technologyArea}`, 20, 40);
+        doc.text('Strategic Analysis', 20, 60);
+        
+        doc.setFontSize(14);
+        doc.setTextColor(0, 0, 0);
+        doc.text(`Generated: ${new Date().toLocaleDateString()}`, 20, 80);
+
+        // Content pages (simplified for demo)
+        doc.addPage();
+        doc.setFontSize(16);
+        doc.text('Strategic Whitepaper', 20, 30);
+        
+        const content = analysisData.whitepaper.substring(0, 2000) + '...';
+        const splitContent = doc.splitTextToSize(content, 170);
+        doc.setFontSize(10);
+        doc.text(splitContent, 20, 50);
+
+        const pdfBlob = doc.output('blob');
+        return {
+            type: 'pdf',
+            name: `${analysisData.technologyArea}_Strategic_Whitepaper.pdf`,
+            blob: pdfBlob,
+            url: URL.createObjectURL(pdfBlob)
+        };
+    }
+
     // Draw hype cycle curve
     drawHypeCycleCurve(ctx, analysisData) {
         const width = ctx.canvas.width;
@@ -409,39 +459,93 @@ Format as a professional enterprise document with clear sections, executive-leve
         ctx.fillText(analysisData.technologyArea, 320, height - 195);
     }
 
-    // Call Claude API
+    // Draw vendor landscape
+    drawVendorLandscape(ctx, analysisData) {
+        const width = ctx.canvas.width;
+        const height = ctx.canvas.height;
+        
+        // Clear canvas
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, width, height);
+        
+        // Title
+        ctx.fillStyle = '#333333';
+        ctx.font = 'bold 20px Arial';
+        ctx.fillText(`${analysisData.technologyArea} Vendor Landscape`, 20, 30);
+        
+        // Axes
+        ctx.strokeStyle = '#333333';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(100, height - 100);
+        ctx.lineTo(width - 100, height - 100);
+        ctx.moveTo(100, height - 100);
+        ctx.lineTo(100, 100);
+        ctx.stroke();
+        
+        // Axis labels
+        ctx.font = '14px Arial';
+        ctx.fillText('Market Share →', width - 200, height - 70);
+        ctx.save();
+        ctx.translate(50, height / 2);
+        ctx.rotate(-Math.PI / 2);
+        ctx.fillText('Innovation →', -50, 0);
+        ctx.restore();
+        
+        // Sample vendor positions (in real implementation, extract from analysis)
+        const vendors = [
+            {name: 'Leader A', x: 600, y: 200},
+            {name: 'Leader B', x: 550, y: 250},
+            {name: 'Challenger C', x: 400, y: 300},
+            {name: 'Niche D', x: 300, y: 180}
+        ];
+        
+        vendors.forEach(vendor => {
+            ctx.fillStyle = '#667eea';
+            ctx.beginPath();
+            ctx.arc(vendor.x, vendor.y, 8, 0, 2 * Math.PI);
+            ctx.fill();
+            
+            ctx.fillStyle = '#333333';
+            ctx.font = '12px Arial';
+            ctx.fillText(vendor.name, vendor.x + 15, vendor.y + 5);
+        });
+    }
+
+    // Call Claude API via Netlify function
     async callClaudeAPI(prompt, options = {}) {
-        const settings = this.getSettings();
+        // Get the current site URL dynamically
+        const baseUrl = window.location.origin;
+        const functionUrl = `${baseUrl}/.netlify/functions/claude-api`;
         
         const requestBody = {
-            model: settings.model || "claude-sonnet-4-20250514",
-            max_tokens: options.maxTokens || 4000,
-            temperature: options.temperature || 0.3,
-            messages: [
-                {
-                    role: "user",
-                    content: prompt
-                }
-            ]
+            prompt: prompt,
+            options: {
+                model: "claude-sonnet-4-20250514",
+                maxTokens: options.maxTokens || 4000,
+                temperature: options.temperature || 0.3
+            }
         };
 
-        const response = await fetch(this.apiEndpoint, {
+        const response = await fetch(functionUrl, {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json',
-                'anthropic-version': '2023-06-01',
-                'x-api-key': settings.apiKey
+                'Content-Type': 'application/json'
             },
             body: JSON.stringify(requestBody)
         });
 
         if (!response.ok) {
             const errorData = await response.json().catch(() => ({}));
-            throw new Error(`Claude API error: ${response.status} - ${errorData.error?.message || 'Unknown error'}`);
+            throw new Error(errorData.error || `API request failed: ${response.status}`);
         }
 
         const data = await response.json();
-        return data.content[0].text;
+        if (!data.success) {
+            throw new Error(data.error || 'API request failed');
+        }
+        
+        return data.content;
     }
 
     // Utility functions

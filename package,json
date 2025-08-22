@@ -1,0 +1,24 @@
+{
+  "name": "enterprise-architecture-ai-agents",
+  "version": "1.0.0",
+  "description": "Enterprise Architecture AI Agents with Claude integration",
+  "main": "index.html",
+  "scripts": {
+    "build": "echo 'No build step required'",
+    "dev": "netlify dev"
+  },
+  "dependencies": {
+    "node-fetch": "^2.6.7"
+  },
+  "devDependencies": {
+    "netlify-cli": "^15.0.0"
+  },
+  "keywords": [
+    "enterprise-architecture",
+    "ai",
+    "claude",
+    "analysis"
+  ],
+  "author": "JD Longmire",
+  "license": "MIT"
+}

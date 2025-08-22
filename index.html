@@ -435,7 +435,7 @@
             <div class="status-bar">
                 <div class="status-item">
                     <i class="fas fa-plug" id="api-status-icon"></i>
-                    <span id="api-status-text">API Disconnected</span>
+                    <span id="api-status-text">Backend Ready</span>
                 </div>
                 <div class="status-item">
                     <i class="fas fa-clock"></i>
@@ -562,10 +562,10 @@
                 <div class="output-item">
                     <div class="output-info">
                         <h4>Welcome to EA AI Agents</h4>
-                        <div class="output-meta">Get started by configuring your Claude API key in Settings</div>
+                        <div class="output-meta">Backend ready! Test your Claude integration or start analyzing technology areas.</div>
                     </div>
-                    <button class="download-btn" onclick="openSettings()">
-                        <i class="fas fa-cog"></i>
+                    <button class="download-btn" onclick="testConnection()">
+                        <i class="fas fa-play"></i>
                     </button>
                 </div>
             </div>
@@ -584,9 +584,9 @@
         </div>
 
         <div class="form-group">
-            <label for="claude-api-key">Claude API Key</label>
+            <label for="claude-api-key">Claude API Key (Optional for Testing)</label>
             <input type="password" id="claude-api-key" placeholder="Enter your Claude API key">
-            <small style="color: #7f8c8d; font-size: 0.8rem;">Your API key is stored locally and never transmitted to external servers</small>
+            <small style="color: #7f8c8d; font-size: 0.8rem;">Note: API key should be configured in Netlify environment variables for production use. This field is for local testing only.</small>
         </div>
 
         <div class="form-group">
@@ -605,6 +605,12 @@
         <div class="form-group">
             <label for="organization-name">Organization Name</label>
             <input type="text" id="organization-name" placeholder="Your Organization">
+        </div>
+
+        <div style="background: #f8f9fa; padding: 15px; border-radius: 10px; margin-bottom: 20px; border-left: 4px solid #667eea;">
+            <strong>Production Setup:</strong><br>
+            <small style="color: #666;">For live deployment, configure your Claude API key in Netlify:<br>
+            Site Settings → Environment Variables → Add CLAUDE_API_KEY</small>
         </div>
 
         <button class="settings-button settings-button-primary" onclick="saveSettings()">Save Settings</button>
@@ -669,15 +675,10 @@
             const statusIcon = document.getElementById('api-status-icon');
             const statusText = document.getElementById('api-status-text');
             
-            if (settings.apiKey) {
-                statusIcon.className = 'fas fa-plug status-connected';
-                statusText.textContent = 'API Connected';
-                enableAgents();
-            } else {
-                statusIcon.className = 'fas fa-plug status-disconnected';
-                statusText.textContent = 'API Disconnected';
-                disableAgents();
-            }
+            // Since we're using Netlify backend, agents should always be enabled
+            statusIcon.className = 'fas fa-plug status-connected';
+            statusText.textContent = 'Backend Connected';
+            enableAgents();
             
             document.getElementById('last-updated').textContent = new Date().toLocaleTimeString();
         }
@@ -688,22 +689,16 @@
                 btn.disabled = false;
                 if (btn.textContent.includes('Configure API First')) {
                     btn.textContent = btn.textContent.replace('Configure API First', 'Launch Agent');
+                } else if (!btn.textContent.includes('Launch') && !btn.textContent.includes('Coming Soon')) {
+                    btn.textContent = 'Launch Agent';
                 }
             });
         }
 
         function disableAgents() {
-            const buttons = document.querySelectorAll('.agent-card .agent-button:not(#orchestrator-btn)');
-            buttons.forEach(btn => {
-                if (!btn.textContent.includes('Coming Soon')) {
-                    btn.disabled = true;
-                    if (btn.textContent.includes('Launch Agent')) {
-                        btn.textContent = btn.textContent.replace('Launch Agent', 'Configure API First');
-                    } else if (!btn.textContent.includes('Configure API First')) {
-                        btn.textContent = 'Configure API First';
-                    }
-                }
-            });
+            // Keep agents enabled since backend handles authentication
+            // This function preserved for consistency but agents stay enabled
+            enableAgents();
         }
 
         async function testConnection() {
@@ -715,41 +710,41 @@
             }
 
             try {
-                // Test API connection
-                const response = await fetch('https://api.anthropic.com/v1/messages', {
+                // Test via Netlify function
+                const functionUrl = `${window.location.origin}/.netlify/functions/claude-api`;
+                
+                const response = await fetch(functionUrl, {
                     method: 'POST',
                     headers: {
-                        'Content-Type': 'application/json',
-                        'anthropic-version': '2023-06-01',
-                        'x-api-key': settings.apiKey
+                        'Content-Type': 'application/json'
                     },
                     body: JSON.stringify({
-                        model: 'claude-sonnet-4-20250514',
-                        max_tokens: 10,
-                        messages: [{ role: 'user', content: 'Hello' }]
+                        prompt: 'Hello, this is a connection test.',
+                        options: {
+                            model: 'claude-sonnet-4-20250514',
+                            maxTokens: 10
+                        }
                     })
                 });
 
                 if (response.ok) {
-                    alert('Connection test successful! Your API key is working.');
+                    const data = await response.json();
+                    if (data.success) {
+                        alert('✅ Connection test successful! Your Claude integration is working.');
+                    } else {
+                        alert('❌ Connection test failed: ' + (data.error || 'Unknown error'));
+                    }
                 } else {
-                    alert('Connection test failed. Please check your API key.');
+                    const errorData = await response.json().catch(() => ({}));
+                    alert('❌ Connection test failed: ' + (errorData.error || 'Backend error'));
                 }
             } catch (error) {
-                alert('Connection test failed: ' + error.message);
+                alert('❌ Connection test failed: ' + error.message + '\n\nMake sure your Netlify functions are deployed and your Claude API key is set as an environment variable.');
             }
         }
 
         // Agent Management
         function openAgent(agentType) {
-            const settings = JSON.parse(localStorage.getItem('ea-ai-settings') || '{}');
-            
-            if (!settings.apiKey && agentType !== 'orchestrator') {
-                alert('Please configure your Claude API key in Settings first');
-                openSettings();
-                return;
-            }
-
             if (agentType === 'orchestrator') {
                 alert('Enterprise Orchestrator coming soon! This will coordinate multiple agents for comprehensive analysis.');
                 return;
