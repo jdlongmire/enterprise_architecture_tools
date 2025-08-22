@@ -1,0 +1,805 @@
+// Technology Research Agent Interface
+// File: js/agents/technology-research-interface.js
+
+// Global variables for the research agent
+let researchAgent = null;
+let currentResearch = null;
+
+// Main interface HTML template
+window.getTechnologyResearchInterface = function() {
+    return `
+        <div class="agent-interface tech-research-interface">
+            <!-- Header Section -->
+            <div class="interface-header">
+                <div class="agent-icon-large">
+                    <i class="fas fa-search" style="color: #9b59b6; font-size: 2rem;"></i>
+                </div>
+                <div class="header-content">
+                    <h2>Technology Research Agent</h2>
+                    <p>Generate comprehensive technology analysis including hype cycles, market landscapes, and strategic whitepapers</p>
+                </div>
+            </div>
+
+            <!-- Input Form -->
+            <div class="research-form" id="research-form">
+                <div class="form-section">
+                    <h3><i class="fas fa-target"></i> Research Parameters</h3>
+                    
+                    <div class="form-group">
+                        <label for="technology-area">Technology Area *</label>
+                        <input type="text" 
+                               id="technology-area" 
+                               placeholder="e.g., AIOps, Zero Trust Security, Edge Computing, Data Mesh"
+                               required>
+                        <small>Enter the technology area you want to research and analyze</small>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="research-depth">Research Depth</label>
+                            <select id="research-depth">
+                                <option value="standard">Standard Analysis</option>
+                                <option value="comprehensive">Comprehensive Analysis</option>
+                                <option value="executive">Executive Summary Only</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="focus-area">Primary Focus</label>
+                            <select id="focus-area">
+                                <option value="strategic">Strategic Assessment</option>
+                                <option value="vendor">Vendor Evaluation</option>
+                                <option value="implementation">Implementation Planning</option>
+                                <option value="market">Market Analysis</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="business-context">Business Context (Optional)</label>
+                        <textarea id="business-context" 
+                                  rows="3" 
+                                  placeholder="Provide specific business requirements, constraints, or objectives to customize the analysis..."></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label>
+                            <input type="checkbox" id="include-vendors" checked>
+                            Include vendor ecosystem analysis
+                        </label>
+                    </div>
+
+                    <div class="form-group">
+                        <label>
+                            <input type="checkbox" id="include-hype-cycle" checked>
+                            Generate hype cycle positioning
+                        </label>
+                    </div>
+
+                    <div class="form-group">
+                        <label>
+                            <input type="checkbox" id="include-whitepaper" checked>
+                            Create strategic whitepaper
+                        </label>
+                    </div>
+                </div>
+
+                <div class="form-actions">
+                    <button class="btn btn-primary btn-large" onclick="startResearch()" id="start-research-btn">
+                        <i class="fas fa-rocket"></i>
+                        Start Technology Research
+                    </button>
+                    <button class="btn btn-secondary" onclick="clearForm()">
+                        <i class="fas fa-undo"></i>
+                        Clear Form
+                    </button>
+                </div>
+            </div>
+
+            <!-- Progress Section -->
+            <div class="progress-section" id="progress-section" style="display: none;">
+                <div class="progress-header">
+                    <h3><i class="fas fa-cogs fa-spin"></i> Research in Progress</h3>
+                    <p id="progress-message">Initializing research...</p>
+                </div>
+                
+                <div class="progress-bar-container">
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progress-fill"></div>
+                    </div>
+                    <span class="progress-text" id="progress-text">0%</span>
+                </div>
+
+                <div class="progress-steps">
+                    <div class="progress-step" id="step-1">
+                        <i class="fas fa-search"></i>
+                        <span>Market Research</span>
+                    </div>
+                    <div class="progress-step" id="step-2">
+                        <i class="fas fa-building"></i>
+                        <span>Vendor Analysis</span>
+                    </div>
+                    <div class="progress-step" id="step-3">
+                        <i class="fas fa-chart-line"></i>
+                        <span>Hype Cycle</span>
+                    </div>
+                    <div class="progress-step" id="step-4">
+                        <i class="fas fa-file-alt"></i>
+                        <span>Whitepaper</span>
+                    </div>
+                    <div class="progress-step" id="step-5">
+                        <i class="fas fa-download"></i>
+                        <span>Artifacts</span>
+                    </div>
+                </div>
+
+                <button class="btn btn-secondary" onclick="cancelResearch()" id="cancel-btn">
+                    <i class="fas fa-stop"></i>
+                    Cancel Research
+                </button>
+            </div>
+
+            <!-- Results Section -->
+            <div class="results-section" id="results-section" style="display: none;">
+                <div class="results-header">
+                    <h3><i class="fas fa-check-circle" style="color: #27ae60;"></i> Research Complete</h3>
+                    <p id="results-summary">Analysis completed successfully</p>
+                </div>
+
+                <div class="results-overview">
+                    <div class="result-stat">
+                        <div class="stat-number" id="analysis-duration">--</div>
+                        <div class="stat-label">Duration</div>
+                    </div>
+                    <div class="result-stat">
+                        <div class="stat-number" id="artifacts-count">--</div>
+                        <div class="stat-label">Artifacts</div>
+                    </div>
+                    <div class="result-stat">
+                        <div class="stat-number" id="pages-generated">--</div>
+                        <div class="stat-label">Pages</div>
+                    </div>
+                </div>
+
+                <div class="artifacts-grid" id="artifacts-grid">
+                    <!-- Artifacts will be dynamically populated -->
+                </div>
+
+                <div class="results-actions">
+                    <button class="btn btn-primary" onclick="downloadAllArtifacts()">
+                        <i class="fas fa-download"></i>
+                        Download All Artifacts
+                    </button>
+                    <button class="btn btn-secondary" onclick="startNewResearch()">
+                        <i class="fas fa-plus"></i>
+                        New Research
+                    </button>
+                    <button class="btn btn-secondary" onclick="viewAnalysisHistory()">
+                        <i class="fas fa-history"></i>
+                        View History
+                    </button>
+                </div>
+            </div>
+
+            <!-- Error Section -->
+            <div class="error-section" id="error-section" style="display: none;">
+                <div class="error-content">
+                    <i class="fas fa-exclamation-triangle" style="color: #e74c3c; font-size: 2rem;"></i>
+                    <h3>Research Failed</h3>
+                    <p id="error-message">An error occurred during the research process.</p>
+                    <button class="btn btn-primary" onclick="retryResearch()">
+                        <i class="fas fa-redo"></i>
+                        Retry Research
+                    </button>
+                    <button class="btn btn-secondary" onclick="resetInterface()">
+                        <i class="fas fa-home"></i>
+                        Back to Form
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <style>
+        /* Technology Research Agent Styles */
+        .tech-research-interface {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .interface-header {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: linear-gradient(135deg, #9b59b6, #8e44ad);
+            border-radius: 15px;
+            color: white;
+        }
+
+        .agent-icon-large {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 15px;
+            border-radius: 50%;
+        }
+
+        .header-content h2 {
+            margin: 0 0 5px 0;
+            font-size: 1.5rem;
+        }
+
+        .header-content p {
+            margin: 0;
+            opacity: 0.9;
+        }
+
+        .form-section {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+        }
+
+        .form-section h3 {
+            margin: 0 0 20px 0;
+            color: #2c3e50;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            box-sizing: border-box;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #9b59b6;
+            box-shadow: 0 0 0 3px rgba(155, 89, 182, 0.1);
+        }
+
+        .form-group small {
+            color: #6c757d;
+            font-size: 0.875rem;
+            margin-top: 5px;
+            display: block;
+        }
+
+        .form-group label input[type="checkbox"] {
+            width: auto;
+            margin-right: 8px;
+        }
+
+        .form-actions {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 30px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 25px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            text-decoration: none;
+            font-size: 1rem;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #9b59b6, #8e44ad);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(155, 89, 182, 0.4);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+            transform: translateY(-1px);
+        }
+
+        .btn-large {
+            padding: 15px 30px;
+            font-size: 1.1rem;
+        }
+
+        .progress-section {
+            text-align: center;
+            padding: 30px;
+        }
+
+        .progress-header h3 {
+            color: #9b59b6;
+            margin-bottom: 10px;
+        }
+
+        .progress-bar-container {
+            position: relative;
+            margin: 20px 0;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .progress-bar {
+            flex: 1;
+            height: 8px;
+            background: #e9ecef;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #9b59b6, #8e44ad);
+            width: 0%;
+            transition: width 0.5s ease;
+        }
+
+        .progress-text {
+            font-weight: 600;
+            color: #9b59b6;
+            min-width: 40px;
+        }
+
+        .progress-steps {
+            display: flex;
+            justify-content: space-between;
+            margin: 30px 0;
+            gap: 10px;
+        }
+
+        .progress-step {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            opacity: 0.5;
+            transition: all 0.3s ease;
+            flex: 1;
+        }
+
+        .progress-step.active {
+            opacity: 1;
+            color: #9b59b6;
+        }
+
+        .progress-step.completed {
+            opacity: 1;
+            color: #27ae60;
+        }
+
+        .progress-step i {
+            font-size: 1.5rem;
+            margin-bottom: 5px;
+        }
+
+        .progress-step span {
+            font-size: 0.875rem;
+            font-weight: 600;
+            text-align: center;
+        }
+
+        .results-section {
+            text-align: center;
+        }
+
+        .results-overview {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            margin: 30px 0;
+        }
+
+        .result-stat {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 15px;
+            border: 2px solid #e9ecef;
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #9b59b6;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            color: #6c757d;
+            font-size: 0.875rem;
+            font-weight: 600;
+        }
+
+        .artifacts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin: 30px 0;
+        }
+
+        .artifact-card {
+            background: white;
+            border: 2px solid #e9ecef;
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .artifact-card:hover {
+            border-color: #9b59b6;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .artifact-icon {
+            font-size: 2rem;
+            margin-bottom: 10px;
+            color: #9b59b6;
+        }
+
+        .artifact-title {
+            font-weight: 600;
+            margin-bottom: 5px;
+            color: #2c3e50;
+        }
+
+        .artifact-size {
+            font-size: 0.875rem;
+            color: #6c757d;
+        }
+
+        .results-actions {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 30px;
+            flex-wrap: wrap;
+        }
+
+        .error-section {
+            text-align: center;
+            padding: 40px;
+        }
+
+        .error-content i {
+            margin-bottom: 20px;
+        }
+
+        .error-content h3 {
+            color: #e74c3c;
+            margin-bottom: 15px;
+        }
+
+        @media (max-width: 768px) {
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+            
+            .results-overview {
+                grid-template-columns: 1fr;
+            }
+            
+            .progress-steps {
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+            
+            .form-actions,
+            .results-actions {
+                flex-direction: column;
+                align-items: center;
+            }
+        }
+        </style>
+    `;
+};
+
+// Initialize the research agent interface
+window.initializeTechResearchInterface = function() {
+    if (window.TechnologyResearchAgent) {
+        researchAgent = new window.TechnologyResearchAgent();
+        
+        // Listen for progress updates
+        document.addEventListener('researchProgress', handleProgressUpdate);
+        document.addEventListener('analysisCompleted', handleAnalysisCompleted);
+    } else {
+        console.error('TechnologyResearchAgent not loaded');
+    }
+};
+
+// Start research process
+async function startResearch() {
+    const technologyArea = document.getElementById('technology-area').value.trim();
+    
+    if (!technologyArea) {
+        alert('Please enter a technology area to research');
+        return;
+    }
+
+    // Get form options
+    const options = {
+        depth: document.getElementById('research-depth').value,
+        focus: document.getElementById('focus-area').value,
+        businessContext: document.getElementById('business-context').value.trim(),
+        includeVendors: document.getElementById('include-vendors').checked,
+        includeHypeCycle: document.getElementById('include-hype-cycle').checked,
+        includeWhitepaper: document.getElementById('include-whitepaper').checked
+    };
+
+    // Show progress section
+    showSection('progress-section');
+    
+    // Disable start button
+    document.getElementById('start-research-btn').disabled = true;
+
+    try {
+        const startTime = Date.now();
+        currentResearch = await researchAgent.conductResearch(technologyArea, options);
+        
+        // Calculate duration
+        const duration = Math.round((Date.now() - startTime) / 1000);
+        
+        // Show results
+        showResults(currentResearch, duration);
+        
+    } catch (error) {
+        console.error('Research failed:', error);
+        showError(error.message);
+    }
+}
+
+// Handle progress updates
+function handleProgressUpdate(event) {
+    const { message, percentage } = event.detail;
+    
+    const progressMessage = document.getElementById('progress-message');
+    const progressFill = document.getElementById('progress-fill');
+    const progressText = document.getElementById('progress-text');
+    
+    if (progressMessage) progressMessage.textContent = message;
+    if (progressFill) progressFill.style.width = percentage + '%';
+    if (progressText) progressText.textContent = percentage + '%';
+    
+    // Update progress steps
+    updateProgressSteps(percentage);
+}
+
+// Update progress step indicators
+function updateProgressSteps(percentage) {
+    const steps = ['step-1', 'step-2', 'step-3', 'step-4', 'step-5'];
+    const stepPercentages = [20, 40, 60, 80, 100];
+    
+    steps.forEach((stepId, index) => {
+        const step = document.getElementById(stepId);
+        if (step) {
+            step.classList.remove('active', 'completed');
+            
+            if (percentage >= stepPercentages[index]) {
+                step.classList.add('completed');
+            } else if (percentage >= stepPercentages[index] - 20) {
+                step.classList.add('active');
+            }
+        }
+    });
+}
+
+// Show results section
+function showResults(analysis, duration) {
+    showSection('results-section');
+    
+    // Update result stats
+    const durationEl = document.getElementById('analysis-duration');
+    const artifactsEl = document.getElementById('artifacts-count');
+    const pagesEl = document.getElementById('pages-generated');
+    const summaryEl = document.getElementById('results-summary');
+    
+    if (durationEl) durationEl.textContent = formatDuration(duration);
+    if (artifactsEl) artifactsEl.textContent = Object.keys(analysis.artifacts).length;
+    if (pagesEl) pagesEl.textContent = '12-15'; // Estimated
+    
+    // Populate artifacts grid
+    populateArtifactsGrid(analysis.artifacts);
+    
+    // Update results summary
+    if (summaryEl) {
+        summaryEl.textContent = "Comprehensive analysis of " + analysis.technology + " completed with " + Object.keys(analysis.artifacts).length + " artifacts generated";
+    }
+}
+
+// Populate artifacts grid
+function populateArtifactsGrid(artifacts) {
+    const grid = document.getElementById('artifacts-grid');
+    if (!grid) return;
+    
+    grid.innerHTML = '';
+    
+    for (const [key, artifact] of Object.entries(artifacts)) {
+        const card = createArtifactCard(key, artifact);
+        grid.appendChild(card);
+    }
+}
+
+// Create artifact card
+function createArtifactCard(key, artifact) {
+    const card = document.createElement('div');
+    card.className = 'artifact-card';
+    card.onclick = () => downloadArtifact(artifact);
+    
+    const iconMap = {
+        executiveSummary: 'fas fa-file-pdf',
+        hypeCycleChart: 'fas fa-chart-line',
+        vendorLandscape: 'fas fa-map',
+        whitepaper: 'fas fa-file-alt',
+        rawData: 'fas fa-database'
+    };
+    
+    const titleMap = {
+        executiveSummary: 'Executive Summary',
+        hypeCycleChart: 'Hype Cycle Chart',
+        vendorLandscape: 'Vendor Landscape',
+        whitepaper: 'Strategic Whitepaper',
+        rawData: 'Analysis Data'
+    };
+    
+    card.innerHTML = 
+        '<div class="artifact-icon">' +
+            '<i class="' + (iconMap[key] || 'fas fa-file') + '"></i>' +
+        '</div>' +
+        '<div class="artifact-title">' + (titleMap[key] || key) + '</div>' +
+        '<div class="artifact-size">' + formatFileSize(artifact.blob?.size || 0) + '</div>';
+    
+    return card;
+}
+
+// Download artifact
+function downloadArtifact(artifact) {
+    const link = document.createElement('a');
+    link.href = artifact.url;
+    link.download = artifact.name;
+    link.click();
+}
+
+// Download all artifacts
+function downloadAllArtifacts() {
+    if (!currentResearch?.artifacts) {
+        alert('No artifacts available for download');
+        return;
+    }
+    
+    Object.values(currentResearch.artifacts).forEach(artifact => {
+        setTimeout(() => downloadArtifact(artifact), 100);
+    });
+}
+
+// Utility functions
+function showSection(sectionId) {
+    const sections = ['research-form', 'progress-section', 'results-section', 'error-section'];
+    sections.forEach(id => {
+        const element = document.getElementById(id);
+        if (element) {
+            element.style.display = id === sectionId ? 'block' : 'none';
+        }
+    });
+}
+
+function showError(message) {
+    const errorMessage = document.getElementById('error-message');
+    const startBtn = document.getElementById('start-research-btn');
+    
+    if (errorMessage) errorMessage.textContent = message;
+    showSection('error-section');
+    if (startBtn) startBtn.disabled = false;
+}
+
+function formatDuration(seconds) {
+    if (seconds < 60) return seconds + 's';
+    const minutes = Math.floor(seconds / 60);
+    const remainingSeconds = seconds % 60;
+    return minutes + "m " + remainingSeconds + "s";
+}
+
+function formatFileSize(bytes) {
+    if (bytes === 0) return '0 B';
+    const k = 1024;
+    const sizes = ['B', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
+}
+
+function clearForm() {
+    const elements = {
+        'technology-area': '',
+        'business-context': '',
+        'research-depth': 'standard',
+        'focus-area': 'strategic'
+    };
+    
+    for (const [id, value] of Object.entries(elements)) {
+        const el = document.getElementById(id);
+        if (el) el.value = value;
+    }
+    
+    const checkboxes = ['include-vendors', 'include-hype-cycle', 'include-whitepaper'];
+    checkboxes.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.checked = true;
+    });
+}
+
+function startNewResearch() {
+    clearForm();
+    showSection('research-form');
+    const startBtn = document.getElementById('start-research-btn');
+    if (startBtn) startBtn.disabled = false;
+}
+
+function resetInterface() {
+    startNewResearch();
+}
+
+function retryResearch() {
+    showSection('research-form');
+    const startBtn = document.getElementById('start-research-btn');
+    if (startBtn) startBtn.disabled = false;
+}
+
+function cancelResearch() {
+    if (confirm('Are you sure you want to cancel the research?')) {
+        showSection('research-form');
+        const startBtn = document.getElementById('start-research-btn');
+        if (startBtn) startBtn.disabled = false;
+    }
+}
+
+function viewAnalysisHistory() {
+    alert('Analysis history feature coming soon!');
+}
+
+function handleAnalysisCompleted(event) {
+    // Handle analysis completion event
+    console.log('Analysis completed:', event.detail);
+}
