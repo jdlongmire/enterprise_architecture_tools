@@ -1,0 +1,120 @@
+# Enterprise Architecture AI Agents - .gitignore
+
+# API Keys and Sensitive Configuration
+*.key
+*.env
+.env
+.env.local
+.env.development
+.env.production
+config/api-keys.js
+config/secrets.js
+api-config.json
+
+# User-specific settings
+.vscode/settings.json
+.idea/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# Operating System Files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+desktop.ini
+
+# Node.js (if we add build tools later)
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+package-lock.json
+yarn.lock
+
+# Temporary files
+*.tmp
+*.temp
+*.swp
+*.swo
+*~
+.cache/
+.temp/
+
+# Build outputs and generated files
+dist/
+build/
+*.min.js
+*.min.css
+
+# Log files
+*.log
+logs/
+*.log.*
+
+# Runtime data
+pids/
+*.pid
+*.seed
+*.pid.lock
+
+# Coverage and testing
+coverage/
+.nyc_output/
+.coverage
+htmlcov/
+
+# Database files (if we add local storage later)
+*.db
+*.sqlite
+*.sqlite3
+
+# Backup files
+*.bak
+*.backup
+*~
+
+# Generated documentation
+docs/generated/
+*.pdf.tmp
+
+# Local development artifacts
+.local/
+local-config.js
+dev-settings.js
+
+# Browser storage and cache files
+.cache/
+storage/
+localstorage/
+
+# Generated reports and outputs (development)
+output/
+reports/
+generated-artifacts/
+
+# IDE and editor files
+.vscode/launch.json
+.vscode/tasks.json
+*.code-workspace
+
+# Archive files
+*.zip
+*.tar.gz
+*.rar
+*.7z
+
+# Image working files
+*.psd
+*.ai
+*.sketch
+
+# Miscellaneous
+*.orig
+.sass-cache/
+.eslintcache
