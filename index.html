@@ -671,7 +671,6 @@
         }
 
         function updateStatus() {
-            const settings = JSON.parse(localStorage.getItem('ea-ai-settings') || '{}');
             const statusIcon = document.getElementById('api-status-icon');
             const statusText = document.getElementById('api-status-text');
             
@@ -695,22 +694,10 @@
             });
         }
 
-        function disableAgents() {
-            // Keep agents enabled since backend handles authentication
-            // This function preserved for consistency but agents stay enabled
-            enableAgents();
-        }
-
+        // Fixed Test Connection Function - Uses Netlify Backend
         async function testConnection() {
-            const settings = JSON.parse(localStorage.getItem('ea-ai-settings') || '{}');
-            
-            if (!settings.apiKey) {
-                alert('Please enter your Claude API key first');
-                return;
-            }
-
             try {
-                // Test via Netlify function
+                // Test via Netlify function (no local API key needed)
                 const functionUrl = `${window.location.origin}/.netlify/functions/claude-api`;
                 
                 const response = await fetch(functionUrl, {
